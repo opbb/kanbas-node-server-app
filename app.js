@@ -5,8 +5,30 @@ import cors from "cors";
 import CourseRoutes from "./courses/routes.js";
 import ModuleRoutes from "./modules/routes.js";
 import "dotenv/config";
+import mongoose from "mongoose";
+import "dotenv/config";
+import session from "express-session";
+mongoose.connect(process.env.DB_CONNECTION_STRING);
 const app = express();
-app.use(cors());
+const sessionOptions = {
+  secret: "any string",
+  resave: false,
+  saveUninitialized: false,
+};
+if (process.env.NODE_ENV !== "development") {
+  sessionOptions.proxy = true;
+  sessionOptions.cookie = {
+    sameSite: "none",
+    secure: true,
+  };
+}
+app.use(session(sessionOptions));
+app.use(
+  cors({
+    credentials: true,
+    origin: process.env.FRONTEND_URL,
+  })
+);
 app.use(express.json());
 ModuleRoutes(app);
 CourseRoutes(app);
